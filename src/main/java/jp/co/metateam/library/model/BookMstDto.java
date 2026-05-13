@@ -27,7 +27,7 @@ public class BookMstDto {
     @NotEmpty(message = "書籍名は必須です")
     @Size(max = 255, message = "書籍名は255文字以下で入力してください")
     private String title;
-   
+
     private Timestamp deletedAt;
 
     private BookMst bookMst;
