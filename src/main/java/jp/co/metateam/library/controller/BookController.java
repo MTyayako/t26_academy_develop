@@ -24,11 +24,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Controller
 public class BookController {
-    
+
     private final BookMstService bookMstService;
 
     @Autowired
-    public BookController(BookMstService bookMstService){
+    public BookController(BookMstService bookMstService) {
         this.bookMstService = bookMstService;
     }
 
@@ -36,13 +36,13 @@ public class BookController {
     public String index(Model model) {
         // 書籍を全件取得
         List<BookMstDto> bookMstList = this.bookMstService.findAvailableWithStockCount();
-        
+
         model.addAttribute("bookMstList", bookMstList);
 
         return "book/index";
     }
 
-    @GetMapping("/book/add")
+    @GetMapping("/book/add") // 登録画面表示
     public String add(Model model) {
         if (!model.containsAttribute("bookMstDto")) {
             model.addAttribute("bookMstDto", new BookMstDto());
@@ -50,5 +50,24 @@ public class BookController {
 
         return "book/add";
     }
-    
+
+    @PostMapping("/book/add") // 登録処理
+    public String addbook(@Valid @ModelAttribute BookMstDto bookMstDto,
+            BindingResult result) {
+        // バリデーションエラー判定
+        if (result.hasErrors()) {
+            return "book/add"; // 入力画面に戻す（ビュー名は適宜変更）
+        }
+        // ISBN重複チェック
+        if (bookMstService.findByIsbn(bookMstDto.getIsbn()).isPresent()) {
+            result.rejectValue(
+                    "isbn",
+                    "duplicate",
+                    "登録済みのISBNです");
+            return "book/add";
+        }
+        bookMstService.save(bookMstDto);
+        return "redirect:/book/index";
+    }
+
 }
